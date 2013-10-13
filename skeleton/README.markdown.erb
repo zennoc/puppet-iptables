@@ -15,9 +15,13 @@
 
 ##Overview
 
-A one-maybe-two sentence summary of what the module does/what problem it solves. This is your 30 second elevator pitch for your module. Consider including OS/Puppet version it works with.       
+This module installs, manages and configures <%= metadata.name %>.
 
 ##Module Description
+
+The module is based on stdmod naming standars.
+Refer to http://github.com/stdmod/ for complete documentation on the common parameters.
+
 
 If applicable, this section should have a brief description of the technology the module integrates with and what that integration enables. This section should answer the questions: "What does this module *do*?" and "Why would I use it?"
     
@@ -33,30 +37,80 @@ If your module has a range of functionality (installation, configuration, manage
 
 ###Setup Requirements **OPTIONAL**
 
-If your module requires anything extra before setting up (pluginsync enabled, etc.), mention it here. 
-  
-###Beginning with [Modulename]  
+If your module requires anything extra before setting up (pluginsync enabled, etc.), mention it here.
 
-The very basic steps needed for a user to get the module up and running. 
+###Beginning with [Modulename]
 
-If your most recent release breaks compatibility or requires particular steps for upgrading, you may wish to include an additional section here: Upgrading (For an example, see http://forge.puppetlabs.com/puppetlabs/firewall).
+A common way to use this module involves its install
+
+        class { '<%= metadata.name %>':
+          config_template => 'site/<%= metadata.name %>/<%= metadata.name %>.conf.erb',
+        }
+
 
 ##Usage
 
-Put the classes, types, and resources for customizing, configuring, and doing the fancy stuff with your module here. 
 
-##Reference
+AGE - Overrides and Customizations
+* Use custom source for main configuration file 
 
-Here, list the classes, types, providers, facts, etc contained in your module. This section should include all of the under-the-hood workings of your module so people know what the module is touching on their system but don't need to mess with things. (We are working on automating this section!)
+        class { '<%= metadata.name %>':
+          config_file_source => [ "puppet:///modules/example42/<%= metadata.name %>/<%= metadata.name %>.conf-${hostname}" ,
+                           "puppet:///modules/example42/<%= metadata.name %>/<%= metadata.name %>.conf" ], 
+        }
 
-##Limitations
 
-This is where you list OS compatibility, version compatibility, etc.
+* Use custom source directory for the whole configuration dir.
 
-##Development
+        class { '<%= metadata.name %>':
+          config_dir_source  => 'puppet:///modules/example42/<%= metadata.name %>/conf/',
+        }
 
-Since your module is awesome, other users will want to play with it. Let them know what the ground rules for contributing are.
+* Use custom source directory for the whole configuration dir purging all the local files that are not on the dir.
+  Note: This option can be used to be sure that the content of a directory is exactly the same you expect, but it is desctructive and may remove files.
 
-##Release Notes/Contributors/Etc **Optional**
+        class { '<%= metadata.name %>':
+          config_dir_source => 'puppet:///modules/example42/<%= metadata.name %>/conf/',
+          config_dir_purge  => true, # Default: false.
+        }
 
-If you aren't using changelog, put your release notes here (though you should consider using changelog). You may also add any additional sections you feel are necessary or important to include here. Please use the `## ` header. 
+* Use custom source directory for the whole configuration dir and define recursing policy.
+
+        class { '<%= metadata.name %>':
+          config_dir_source    => 'puppet:///modules/example42/<%= metadata.name %>/conf/',
+          config_dir_recursion => false, # Default: true.
+        }
+
+* Use custom template for main config file. Note that template and source arguments are alternative.
+
+        class { '<%= metadata.name %>':
+          config_file_template => 'example42/<%= metadata.name %>/<%= metadata.name %>.conf.erb',
+        }
+
+* Use a custom template and provide an hash of custom configurations that you can use inside the template
+
+        class { '<%= metadata.name %>':
+          config_file_template      => 'example42/<%= metadata.name %>/<%= metadata.name %>.conf.erb',
+          config_file_options_hash  => {
+            opt  => 'value',
+            opt2 => 'value2',
+          },
+        }
+
+
+
+* Automatically include a custom class with extra resources related to <%= metadata.name %>.
+  Here is loaded $modulepath/example42/manifests/my_<%= metadata.name %>.pp.
+  Note: Use a subclass name different than <%= metadata.name %> to avoid order loading issues.
+
+        class { '<%= metadata.name %>':
+         my_class => 'site::<%= metadata.name %>_my',
+        }
+
+
+##Operating Systems Support
+
+This is tested on these OS:
+- RedHat osfamily 5 and 6
+- Debian 6 and 7
+- Ubuntu 10.04 and 12.04
