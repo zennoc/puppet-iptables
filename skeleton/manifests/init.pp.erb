@@ -153,14 +153,14 @@ class <%= metadata.name %> (
   if $<%= metadata.name %>::monitor_class {
     class { $<%= metadata.name %>::monitor_class:
       options_hash => $<%= metadata.name %>::monitor_options_hash,
-      scope_hash   => inline_template("<%= scope.to_hash.reject { |k,v| k.to_s =~ /${scope_hash_filter}/ } %>"),
+      scope_hash   => inline_template("<%= @scope.to_hash.reject { |k,v| k.to_s =~ /${scope_hash_filter}/ } %>"),
     }
   }
 
   if $<%= metadata.name %>::firewall_class {
     class { $<%= metadata.name %>::firewall_class:
       options_hash => $<%= metadata.name %>::firewall_options_hash,
-      scope_hash   => inline_template("<%= scope.to_hash.reject { |k,v| k.to_s =~ /${scope_hash_filter}/ } %>"),
+      scope_hash   => inline_template("<%= @scope.to_hash.reject { |k,v| k.to_s =~ /${scope_hash_filter}/ } %>"),
     }
   }
 
