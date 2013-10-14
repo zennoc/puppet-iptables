@@ -69,46 +69,52 @@ class <%= metadata.name %> (
   $config_file_mode           = $<%= metadata.name %>::params::config_file_mode
 
   if $config_file_content {
-    $managed_config_file_content = $config_file_content
+    $manage_config_file_content = $config_file_content
   } else {
     if $config_file_template {
-      $managed_config_file_content = template($config_file_template)
+      $manage_config_file_content = template($config_file_template)
     } else {
-      $managed_config_file_content = undef
+      $manage_config_file_content = undef
     }
   }
 
-  if $version {
-    $managed_package_ensure = $version
+  if $config_file_notify {
+    $manage_config_file_notify = $config_file_notify
   } else {
-    $managed_package_ensure = $ensure
+    $manage_config_file_notify = undef
+  }
+
+  if $version {
+    $manage_package_ensure = $version
+  } else {
+    $manage_package_ensure = $ensure
   }
 
   if $ensure == 'absent' {
-    $managed_service_enable = undef
-    $managed_service_ensure = stopped
+    $manage_service_enable = undef
+    $manage_service_ensure = stopped
     $config_dir_ensure = absent
     $config_file_ensure = absent
   } else {
-    $managed_service_enable = $service_enable
-    $managed_service_ensure = $service_ensure
+    $manage_service_enable = $service_enable
+    $manage_service_ensure = $service_ensure
     $config_dir_ensure = directory
     $config_file_ensure = present
   }
 
 
-  # Resources Managed
+  # Resources manage
 
   if $<%= metadata.name %>::package_name {
     package { $<%= metadata.name %>::package_name:
-      ensure   => $<%= metadata.name %>::managed_package_ensure,
+      ensure   => $<%= metadata.name %>::manage_package_ensure,
     }
   }
 
   if $<%= metadata.name %>::service_name {
     service { $<%= metadata.name %>::service_name:
-      ensure     => $<%= metadata.name %>::managed_service_ensure,
-      enable     => $<%= metadata.name %>::managed_service_enable,
+      ensure     => $<%= metadata.name %>::manage_service_ensure,
+      enable     => $<%= metadata.name %>::manage_service_enable,
     }
   }
 
@@ -120,8 +126,8 @@ class <%= metadata.name %> (
       owner   => $<%= metadata.name %>::config_file_owner,
       group   => $<%= metadata.name %>::config_file_group,
       source  => $<%= metadata.name %>::config_file_source,
-      content => $<%= metadata.name %>::managed_config_file_content,
-      notify  => $<%= metadata.name %>::config_file_notify,
+      content => $<%= metadata.name %>::manage_config_file_content,
+      notify  => $<%= metadata.name %>::manage_config_file_notify,
       require => $<%= metadata.name %>::config_file_require,
     }
   }
