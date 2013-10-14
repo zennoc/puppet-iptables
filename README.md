@@ -1,10 +1,14 @@
-Puppet modules often take on the same file system structure. The
-built-in puppet-module tool makes starting modules easy, but the build
-in skeleton module is very simple. This skeleton is very opinionated.
-It's going to assume you're going to start out with tests (both unit and
-system), that you care about the puppet style guide, test using Travis,
-keep track of releases and structure your modules according to strong
-conventions.
+This puppet module skeleton is based on stdmod naming standards.
+
+It provides:
+ - a basic package/service/configration main class
+ - a general purpose conf define
+ - puppet-lint, rspec, rspec-system tests
+
+The skeleton is based on these excellent works:
+https://github.com/garethr/puppet-module-skeleton
+https://github.com/spiette/puppet-module-skeleton
+
 
 ## Installation
 
@@ -55,7 +59,3 @@ Of particular interst should be:
 * `rake lint` - checks against the puppet style guide
 * `rake syntax` - to check your have valid puppet and erb syntax
 
-## Thanks
-
-The trick used in the installation above, and a few other bits came from
-another excellent module skeleton from [spiette](https://github.com/spiette/puppet-module-skeleton)
