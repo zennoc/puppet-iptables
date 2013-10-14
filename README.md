@@ -6,7 +6,9 @@ It provides:
  - puppet-lint, rspec, rspec-system tests
 
 The skeleton is based on these excellent works:
+
 https://github.com/garethr/puppet-module-skeleton
+
 https://github.com/spiette/puppet-module-skeleton
 
 
@@ -18,7 +20,7 @@ meant to be better templates for use with the puppet module tool.
 
 As we don't want to have our .git files and this README in our skeleton, we export it like this:
 
-    git clone https://github.com/stdmod/puppet-module-skeleton 
+    git clone https://github.com/stdmod/puppet-module-skeleton
     cd puppet-module-skeleton
     find skeleton -type f | git checkout-index --stdin --force --prefix="$HOME/.puppet/var/puppet-module/" --
 
