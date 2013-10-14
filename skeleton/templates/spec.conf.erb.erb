@@ -1,8 +1,5 @@
 # This is a template used only for rspec tests
 
-# Yaml of the whole scope
-<%= scope.to_hash.reject { |k,v| !( k.is_a?(String) && v.is_a?(String) ) }.to_yaml %>
-
 # Custom Options
 <%= @config_file_options_hash['opt_a'] %>
 <%= @config_file_options_hash['opt_b'] %>
