@@ -50,7 +50,7 @@ describe '<%= metadata.name %>' do
 
       describe "#{osfamily} Configuration via custom template" do
         let(:params) { {
-          :config_file_template     => '<%= metadata.name %>/spec.conf.erb',
+          :config_file_template     => '<%= metadata.name %>/spec.conf',
           :config_file_options_hash => { 'opt_a' => 'value_a' },
         } }
         let(:facts) {{
