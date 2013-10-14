@@ -6,7 +6,6 @@ include RSpecSystemPuppet::Helpers
 RSpec.configure do |c|
   proj_root = File.expand_path(File.join(File.dirname(__FILE__), '..'))
   c.tty = true
-  c.include ::LocalHelpers
   c.include RSpecSystemPuppet::Helpers
   c.extend RSpecSystemPuppet::Helpers
 
