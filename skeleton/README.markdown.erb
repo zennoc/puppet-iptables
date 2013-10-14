@@ -4,8 +4,8 @@
 
 1. [Overview](#overview)
 2. [Module Description](#module-description)
-3. [Setup]](#setup)
-    * [What module <%= metadata.name %> affects](#what-modulename-<%= metadata.name %>-affects)
+3. [Setup](#setup)
+    * [Resources managed by <%= metadata.name %> module](#resources-managed-by-<%= metadata.name %>-module)
     * [Setup requirements](#setup-requirements)
     * [Beginning with module <%= metadata.name %>](#beginning-with-module-<%= metadata.name %>)
 4. [Usage](#usage)
@@ -18,26 +18,22 @@ This module installs, manages and configures <%= metadata.name %>.
 
 ##Module Description
 
-The module is based on stdmod naming standars.
+The module is based on **stdmod** naming standars.
 
 Refer to http://github.com/stdmod/ for complete documentation on the common parameters.
 
 
-If your module has a range of functionality (installation, configuration, management, etc.) this is the time to mention it.
-
 ##Setup
 
-###What module <%= metadata.name %> affects
-
-* A list of files, packages, services, or operations that the module will alter, impact, or execute on the system it's installed on.
-* This is a great place to stick any warnings.
-* Can be in list or paragraph form.
+###Resources managed by <%= metadata.name %> module
+* This module installs the <%= metadata.name %> package
+* Enabled the <%= metadata.name %> service
+* Can manage all the configuration files (by default no file is changed)
 
 ###Setup Requirements
-
-* PuppetLabs stdlib
+* PuppetLabs stdlib module
 * Puppet version >= 2.7.x
-
+* Facter version >= 1.6.2
 
 ###Beginning with module <%= metadata.name %>
 
@@ -45,7 +41,7 @@ To install the package provided by the module just include it:
 
         include <%= metadata.name %>
 
-The main class arguments can be provided either via Hiera or direct parameters:
+The main class arguments can be provided either via Hiera (from Puppet 3.x) or direct parameters:
 
         class { '<%= metadata.name %>':
           parameter => value,
@@ -116,8 +112,15 @@ This is tested on these OS:
 
 ##Development
 
-Pull requests (PR) and bug reports are welcomed.
-Well submitting PR please follow these quidelines:
+Pull requests (PR) and bug reports via GitHub are welcomed.
+
+When submitting PR please follow these quidelines:
 - Provide puppet-lint compliant code
 - If possible provide rspec tests
 - Follow the module style and stdmod naming standards
+
+When submitting bug report please include or link:
+- The Puppet code that triggers the error
+- The output of facter on the system where you try it
+- All the relevant error logs
+- Any other information useful to undestand the context
