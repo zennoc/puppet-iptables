@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe '<%= metadata.name %>' do
+describe 'iptables' do
 
   context 'Supported OS - ' do
     ['Debian', 'RedHat'].each do |osfamily|
@@ -9,8 +9,8 @@ describe '<%= metadata.name %>' do
         let(:facts) {{
           :osfamily => osfamily,
         }}
-        it { should contain_package('<%= metadata.name %>').with_ensure('present') }
-        it { should contain_service('<%= metadata.name %>').with_ensure('running') }
+        it { should contain_package('iptables').with_ensure('present') }
+        it { should contain_service('iptables').with_ensure('running') }
       end
 
       describe "#{osfamily} Installation of a specific package version" do
@@ -20,7 +20,7 @@ describe '<%= metadata.name %>' do
         let(:facts) {{
           :osfamily => osfamily,
         }}
-        it { should contain_package('<%= metadata.name %>').with_ensure('1.0.42') }
+        it { should contain_package('iptables').with_ensure('1.0.42') }
       end
 
       describe "#{osfamily} Removal of package installation" do
@@ -30,10 +30,10 @@ describe '<%= metadata.name %>' do
         let(:facts) {{
           :osfamily => osfamily,
         }}
-        it 'should remove Package[<%= metadata.name %>]' do should contain_package('<%= metadata.name %>').with_ensure('absent') end
-        it 'should stop Service[<%= metadata.name %>]' do should contain_service('<%= metadata.name %>').with_ensure('stopped') end
-        it 'should not manage at boot Service[<%= metadata.name %>]' do should contain_service('<%= metadata.name %>').with_enable(nil) end
-        it 'should remove <%= metadata.name %> configuration file' do should contain_file('<%= metadata.name %>.conf').with_ensure('absent') end
+        it 'should remove Package[iptables]' do should contain_package('iptables').with_ensure('absent') end
+        it 'should stop Service[iptables]' do should contain_service('iptables').with_ensure('stopped') end
+        it 'should not manage at boot Service[iptables]' do should contain_service('iptables').with_enable(nil) end
+        it 'should remove iptables configuration file' do should contain_file('iptables.conf').with_ensure('absent') end
       end
 
       describe "#{osfamily} Service disabling" do
@@ -44,45 +44,45 @@ describe '<%= metadata.name %>' do
         let(:facts) {{
           :osfamily => osfamily,
         }}
-        it 'should stop Service[<%= metadata.name %>]' do should contain_service('<%= metadata.name %>').with_ensure('stopped') end
-        it 'should not enable at boot Service[<%= metadata.name %>]' do should contain_service('<%= metadata.name %>').with_enable('false') end
+        it 'should stop Service[iptables]' do should contain_service('iptables').with_ensure('stopped') end
+        it 'should not enable at boot Service[iptables]' do should contain_service('iptables').with_enable('false') end
       end
 
       describe "#{osfamily} Configuration via custom template" do
         let(:params) { {
-          :config_file_template     => '<%= metadata.name %>/spec.conf',
+          :config_file_template     => 'iptables/spec.conf',
           :config_file_options_hash => { 'opt_a' => 'value_a' },
         } }
         let(:facts) {{
           :osfamily => osfamily,
         }}
-        it { should contain_file('<%= metadata.name %>.conf').with_content(/This is a template used only for rspec tests/) }
+        it { should contain_file('iptables.conf').with_content(/This is a template used only for rspec tests/) }
         it 'should generate a template that uses custom options' do
-          should contain_file('<%= metadata.name %>.conf').with_content(/value_a/)
+          should contain_file('iptables.conf').with_content(/value_a/)
         end
       end
 
       describe "#{osfamily} Configuration via custom source file" do
         let(:params) { {
-          :config_file_source => "puppet:///modules/<%= metadata.name %>/spec.conf",
+          :config_file_source => "puppet:///modules/iptables/spec.conf",
         } }
         let(:facts) {{
           :osfamily => osfamily,
         }}
-        it { should contain_file('<%= metadata.name %>.conf').with_source('puppet:///modules/<%= metadata.name %>/spec.conf') }
+        it { should contain_file('iptables.conf').with_source('puppet:///modules/iptables/spec.conf') }
       end
 
       describe "#{osfamily} Configuration via custom source dir" do
         let(:params) { {
-          :config_dir_source => 'puppet:///modules/<%= metadata.name %>/tests/',
+          :config_dir_source => 'puppet:///modules/iptables/tests/',
           :config_dir_purge => true
         } }
         let(:facts) {{
           :osfamily => osfamily,
         }}
-        it { should contain_file('<%= metadata.name %>.dir').with_source('puppet:///modules/<%= metadata.name %>/tests/') }
-        it { should contain_file('<%= metadata.name %>.dir').with_purge('true') }
-        it { should contain_file('<%= metadata.name %>.dir').with_force('true') }
+        it { should contain_file('iptables.dir').with_source('puppet:///modules/iptables/tests/') }
+        it { should contain_file('iptables.dir').with_purge('true') }
+        it { should contain_file('iptables.dir').with_force('true') }
       end
 
       describe "#{osfamily} Service restart on config file change (default)" do
@@ -90,7 +90,7 @@ describe '<%= metadata.name %>' do
           :osfamily => osfamily,
         }}
         it 'should automatically restart the service when files change' do
-          should contain_file('<%= metadata.name %>.conf').with_notify('Service[<%= metadata.name %>]')
+          should contain_file('iptables.conf').with_notify('Service[iptables]')
         end
       end
 
@@ -102,7 +102,7 @@ describe '<%= metadata.name %>' do
           :osfamily => osfamily,
         }}
         it 'should automatically restart the service when files change' do
-          should contain_file('<%= metadata.name %>.conf').without_notify
+          should contain_file('iptables.conf').without_notify
         end
       end
 

@@ -1,9 +1,13 @@
+#
 # = Class: iptables
 #
-# Manages Iptables.
+# This class installs and manages iptables
 #
 #
 # == Parameters
+#
+# Refer to https://github.com/stdmod for official documentation
+# on the stdmod parameters used
 #
 # Module specific parameters
 #
@@ -143,74 +147,132 @@
 #   Dolf Schimmel - Freeaqingme <dolf@dolfschimmel.nl/>
 #
 class iptables (
-  $my_class                 = '',
-  $service_autorestart      = true,
-  $log                      = 'drop',
-  $log_prefix               = 'iptables',
-  $log_limit_burst          = 10,
-  $log_limit                = '30/m',
-  $log_level                = 4,
-  $rejectWithICMPProhibited = true,
-  $default_target           = 'ACCEPT',
-  $default_order            = 5000,
-  $enable_v4                = $iptables::params::enable_v4,
-  $enable_v6                = $iptables::params::enable_v6,
-  $failsafe_ssh             = true,
-  $template                 = '',
-  $mode                     = 'concat',
-  $version                  = 'present',
-  $package                  = $iptables::params::package,
-  $configure_ipv6_nat       = $iptables::params::configure_ipv6_nat,
-  $service                  = $iptables::params::service,
-  $service_override_restart = $iptables::params::service_override_restart,
-  $service_status           = $iptables::params::service_status,
-  $service_status_cmd       = $iptables::params::service_status_cmd,
-  $config_file              = $iptables::params::config_file,
-  $config_file_v6           = $iptables::params::config_file_v6,
-  $config_file_mode         = '0640',
-  $config_file_owner        = 'root',
-  $config_file_group        = 'root',
-  $source                   = '',
-  $absent                   = false,
-  $disable                  = false,
-  $disableboot              = false,
-  $debug                    = false,
-  $audit_only               = false
+  $ensure                        = 'present',
+  $version                       = undef,
+  
+  $package_name                   = $iptables::params::package_name,
+
+  $service_name                   = $iptables::params::service_name,
+  $service_ensure                 = 'running',
+  $service_enable                 = true,
+
+  $config_file_path_v4            = $iptables::params::config_file_path_v4,
+  $config_file_path_v6            = $iptables::params::config_file_path_v6,
+  $config_file_replace            = true,
+  $config_file_require            = 'Package[iptables]',
+  $config_file_notify             = 'Service[iptables]',
+  $config_file_source             = undef,
+  $config_file_template           = undef,
+  $config_file_content            = undef,
+  $config_file_options_hash       = undef,
+  $config_file_owner              = 'root',
+  $config_file_group              = 'root',
+  $config_file_mode               = '0640',
+
+  $config_dir_path                = $iptables::params::config_dir_path,
+  $config_dir_source              = undef,
+  $config_dir_purge               = false,
+  $config_dir_recurse             = true,
+
+  $dependency_class               = undef,
+  $my_class                       = undef,
+
+# TODO?
+#  $monitor_class                 = undef,
+#  $monitor_options_hash          = { } ,
+
+  $scope_hash_filter              = '(uptime.*|timestamp)',
+
+# Module specific variables
+  $log                            = 'dropped',
+  $log_prefix                     = 'iptables',
+  $log_limit_burst                = 10,
+  $log_limit                      = '30/m',
+  $log_level                      = 4,
+
+  $rejectWithICMPProhibited       = true,
+  $default_target                 = 'ACCEPT',
+  $default_order                  = 5000,
+
+  $enable_v4                      = $iptables::params::enable_v4,
+  $enable_v6                      = $iptables::params::enable_v6,
+
+  $failsafe_ssh                   = true,
+  $configure_ipv6_nat             = $iptables::params::configure_ipv6_nat,
+
+  $service_name_override_restart  = $iptables::params::service_override_restart,
+  $service_name_status_cmd        = $iptables::params::service_status_cmd,
   ) inherits iptables::params {
+    
+  # Input parameters validation
 
-  $bool_service_autorestart = any2bool($service_autorestart)
-  $bool_absent = any2bool($absent)
-  $bool_disable = any2bool($disable)
-  $bool_disableboot = any2bool($disableboot)
-  $bool_debug = any2bool($debug)
-  $bool_audit_only = any2bool($audit_only)
-  $bool_enable_v4 = any2bool($enable_v4)
-  $bool_enable_v6 = any2bool($enable_v6)
-  $bool_service_override_restart = any2bool($service_override_restart)
+  validate_re($ensure, ['present','absent'], 'Valid values: present, absent.')
+  validate_bool($service_enable)
+  validate_bool($config_dir_recurse)
+  validate_bool($config_dir_purge)
+  if $config_file_options_hash { validate_hash($config_file_options_hash) }
+#  if $monitor_options_hash { validate_hash($monitor_options_hash) }
+  validate_re($log, ['dropped','all','none',false], 'Valid values: dropped, all or none.')
+  validate_int($log_limit_burst)
+  validate_string($log_limit)
+  validate_int($log_level)
+  validate_bool($rejectWithICMPProhibited)
+  validate_string($default_target)
+  validate_int($default_order)
+  validate_bool($enable_v4)
+  validate_bool($enable_v6)
+  validate_bool($failsafe_ssh)
+  validate_bool($configure_ipv6_nat)
+  validate_bool($service_name_override_restart)
+  validate_string($service_name_status_cmd)
+  
+   # Calculation of variables used in the module
 
-  ### Definition of some variables used in the module
-  $manage_package = $iptables::bool_absent ? {
-    true  => 'absent',
-    false => $iptables::version,
+  if $config_file_content {
+    $manage_config_file_content = $config_file_content
+  } else {
+    if $config_file_template {
+      $manage_config_file_content = template($config_file_template)
+    } else {
+      $manage_config_file_content = undef
+    }
+  }
+  
+  if $config_file_notify {
+    $manage_config_file_notify = $config_file_notify
+  } else {
+    $manage_config_file_notify = undef
   }
 
-  $manage_service_enable = $iptables::bool_disableboot ? {
-    true    => false,
-    default => $iptables::bool_disable ? {
-      true    => false,
-      default => $iptables::bool_absent ? {
-        true  => false,
-        false => true,
-      },
-    },
+  if $version {
+    $manage_package_ensure = $version
+  } else {
+    $manage_package_ensure = $ensure
   }
 
-  $manage_service_ensure = $iptables::bool_disable ? {
-    true    => 'stopped',
-    default =>  $iptables::bool_absent ? {
-      true    => 'stopped',
-      default => 'running',
-    },
+  
+  if $ensure == 'absent' {
+    $manage_service_enable = undef
+    $manage_service_ensure = stopped
+    $config_dir_ensure = absent
+    $config_file_ensure = absent
+  } else {
+    $manage_service_enable = $service_enable
+    $manage_service_ensure = $service_ensure
+    $config_dir_ensure = directory
+    $config_file_ensure = present
+  }
+  
+  if $config_file_ensure == 'present' and $enable_v4 {
+    $config_file_ensure_v4 = 'present'
+  } else {
+    $config_file_ensure_v4 = 'absent'
+  }
+
+  if $config_file_ensure == 'present' and $enable_v6 {
+    $config_file_ensure_v6 = 'present'
+  } else {
+    $config_file_ensure_v6 = 'absent'
   }
 
   $reject_string_v4 = any2bool($rejectWithICMPProhibited) ? {
@@ -222,140 +284,176 @@ class iptables (
     true    => 'REJECT --reject-with icmp6-adm-prohibited',
     false   => 'REJECT'
   }
-
-  $manage_service_autorestart = $iptables::bool_service_autorestart ? {
-    true    => Service[iptables],
-    false   => undef,
-  }
-
-  $manage_file = $iptables::bool_absent ? {
-    true    => 'absent',
-    default => 'present',
-  }
-
-  $manage_directory = $iptables::bool_absent ? {
-    true    => 'absent',
-    default => 'directory',
-  }
-
-  $manage_audit = $iptables::bool_audit_only ? {
-    true  => 'all',
-    false => undef,
-  }
-
-  $manage_file_replace = $iptables::bool_audit_only ? {
-    true  => false,
-    false => true,
-  }
-
-  $manage_file_source = $iptables::source ? {
-    ''        => undef,
-    default   => $iptables::source,
-  }
-
-  $manage_file_content = $iptables::template ? {
-    ''        => undef,
-    default   => template($iptables::template),
-  }
-
-  case $::operatingsystem {
-    debian: { require iptables::debian }
-    ubuntu: { require iptables::debian }
-    default: { }
-  }
-
-  # Basic Package - Service - Configuration file management
-  package { 'iptables':
-    ensure => $iptables::manage_package,
-    name   => $iptables::package,
-  }
-
-  include iptables::ruleset::default_action
-  include iptables::ruleset::loopback
   
-  if any2bool($failsafe_ssh) {
-    include iptables::ruleset::failsafe_ssh
+  $cmd_restart_v4 = inline_template('iptables-restore < <%= scope.lookupvar("iptables::config_file_path_v4") %>')
+  $cmd_restart_v6 = inline_template('ip6tables-restore < <%= scope.lookupvar("iptables::config_file_path_v6") %>')
+
+  if $enable_v4 and $enable_v6 {
+    $cmd_restart = "${cmd_restart_v4} && ${cmd_restart_v6}"
+  } elsif $enable_v4 {
+    $cmd_restart = $cmd_restart_v4
+  } else {
+    $cmd_restart = $cmd_restart_v6
   }
 
-  if ! $bool_service_override_restart {
-    service { 'iptables':
+
+  # Resources manage
+
+  if $iptables::package_name {
+    package { $iptables::package_name:
+      ensure   => $iptables::manage_package_ensure,
+    }
+  }
+
+  if $iptables::service_name {
+    service { $iptables::service_name:
       ensure     => $iptables::manage_service_ensure,
-      name       => $iptables::service,
       enable     => $iptables::manage_service_enable,
-      hasstatus  => $iptables::service_status,
-      status     => $iptables::service_status_cmd,
-      require    => Package['iptables']
-   }
- } else {
-
-    $cmd_restart_v4 = inline_template('iptables-restore < <%= scope.lookupvar("iptables::config_file") %>')
-    $cmd_restart_v6 = inline_template('ip6tables-restore < <%= scope.lookupvar("iptables::config_file_v6") %>')
-
-    if $bool_enable_v4 and $bool_enable_v6 {
-      $cmd_restart = "${cmd_restart_v4} && ${cmd_restart_v6}"
-    } elsif $bool_enable_v4 {
-      $cmd_restart = $cmd_restart_v4
+    }
+    
+    
+    if ! $service_override_restart {
+      service { $iptables::service_name:
+        ensure     => $iptables::manage_service_ensure,
+        enable     => $iptables::manage_service_enable,
+#        hasstatus  => $iptables::service_status,
+#        status     => $iptables::service_status_cmd,
+#        require    => Package['iptables']
+      }
     } else {
-      $cmd_restart = $cmd_restart_v6
+  
+      service { 'iptables':
+        ensure     => $iptables::manage_service_ensure,
+        name       => $service_name,
+        enable     => $iptables::manage_service_enable,
+#        hasstatus  => $iptables::service_status,
+#        status     => $iptables::service_status_cmd,
+#        require    => Package['iptables'],
+        hasrestart => false,
+        restart    => $cmd_restart
+      }
     }
+  }
 
-    service { 'iptables':
-      ensure     => $iptables::manage_service_ensure,
-      name       => $iptables::service,
-      enable     => $iptables::manage_service_enable,
-      hasstatus  => $iptables::service_status,
-      status     => $iptables::service_status_cmd,
-      require    => Package['iptables'],
-      hasrestart => false,
-      restart    => $cmd_restart
+  if $iptables::config_file_path_v4 {
+    if $iptables::manage_config_file_content or $iptables::config_file_source {
+      file { 'iptables_v4.conf':
+        ensure  => $iptables::config_file_ensure_v4,
+        path    => $iptables::config_file_path_v4,
+        mode    => $iptables::config_file_mode,
+        owner   => $iptables::config_file_owner,
+        group   => $iptables::config_file_group,
+        source  => $iptables::config_file_source,
+        content => $iptables::manage_config_file_content,
+        notify  => $iptables::manage_config_file_notify,
+        require => $iptables::config_file_require,
+      }
+    } else {
+      
+      # No source specified. Lets generate it!
+      iptables::conf { 'iptables::conf::v4':
+        ip_version    => 4,
+        path          => $iptables::config_file_path_v4,
+        mode          => $iptables::config_file_mode,
+        owner         => $iptables::config_file_owner,
+        group         => $iptables::config_file_group,
+        notify        => $iptables::manage_config_file_notify,
+        require       => $iptables::config_file_require,
+        replace       => $config_file_replace,
+      }
+      
     }
+  }
 
+  if $iptables::config_file_path_v6 {
+    if $iptables::manage_config_file_content or $iptables::config_file_source {
+    
+      file { 'iptables_v6.conf':
+        ensure  => $iptables::config_file_ensure_v6,
+        path    => $iptables::config_file_path_v6,
+        mode    => $iptables::config_file_mode,
+        owner   => $iptables::config_file_owner,
+        group   => $iptables::config_file_group,
+        source  => $iptables::config_file_source,
+        content => $iptables::manage_config_file_content,
+        notify  => $iptables::manage_config_file_notify,
+        require => $iptables::config_file_require,
+      }
+    
+    } else {
+      
+      # No source specified. Lets generate it!
+      iptables::conf { 'iptables::conf::v6':
+        ip_version    => 6,
+        path          => $iptables::config_file_path_v6,
+        mode          => $iptables::config_file_mode,
+        owner         => $iptables::config_file_owner,
+        group         => $iptables::config_file_group,
+        notify        => $iptables::manage_config_file_notify,
+        require       => $iptables::config_file_require,
+        replace       => $config_file_replace,
+      }
+      
+    }
+  }
+
+  if $iptables::config_dir_source {
+    file { 'iptables.dir':
+      ensure  => $iptables::config_dir_ensure,
+      path    => $iptables::config_dir_path,
+      source  => $iptables::config_dir_source,
+      recurse => $iptables::config_dir_recurse,
+      purge   => $iptables::config_dir_purge,
+      force   => $iptables::config_dir_purge,
+      notify  => $iptables::config_file_notify,
+      require => $iptables::config_file_require,
+    }
   }
 
   file { [ '/var/lib/puppet/iptables',
            '/var/lib/puppet/iptables/tables/' ]:
-    ensure  => $iptables::manage_directory,
-    audit   => $iptables::manage_audit,
+    ensure  => $iptables::config_dir_ensure,
     mode    => $iptables::config_file_mode,
     owner   => $iptables::config_file_owner,
     group   => $iptables::config_file_group,
     recurse => true
   }
 
-  # How to manage iptables configuration
-  case $iptables::mode {
-    'file': { include iptables::file }
-    'concat': {
-      if $bool_enable_v4 {
-        iptables::concat_emitter { 'v4':
-          emitter_target  => $iptables::config_file,
-          is_ipv6         => false,
-        }
-      }
-      if $bool_enable_v6 {
-        iptables::concat_emitter { 'v6':
-          emitter_target  => $iptables::config_file_v6,
-          is_ipv6         => true,
-        }
-      }
-    }
-    default: { }
+
+  # Extra classe
+
+  include iptables::ruleset::default_action
+  include iptables::ruleset::loopback
+
+  if $failsafe_ssh {
+    include iptables::ruleset::failsafe_ssh
   }
 
-  ### Include custom class if $my_class is set
+  if $iptables::dependency_class {
+    include $iptables::dependency_class
+  }
+
   if $iptables::my_class {
     include $iptables::my_class
   }
 
-  ### Debugging, if enabled ( debug => true )
-  if $iptables::bool_debug == true {
-    file { 'debug_iptables':
-      ensure  => $iptables::manage_file,
-      path    => "${settings::vardir}/debug-iptables",
-      mode    => '0640',
-      owner   => 'root',
-      group   => 'root',
-      content => inline_template('<%= scope.to_hash.reject { |k,v| k.to_s =~ /(uptime.*|path|timestamp|free|.*password.*|.*psk.*|.*key)/ }.to_yaml %>'),
-    }
-  }
+# Todo
+#  if $iptables::monitor_class {
+#    class { $iptables::monitor_class:
+#      options_hash => $iptables::monitor_options_hash,
+#      scope_hash   => {}, # TODO: Find a good way to inject class' scope
+#    }
+#  }
+
+#  ### Debugging, if enabled ( debug => true )
+#  if $iptables::bool_debug == true {
+#    file { 'debug_iptables':
+#      ensure  => $iptables::manage_file,
+#      path    => "${settings::vardir}/debug-iptables",
+#      mode    => '0640',
+#      owner   => 'root',
+#      group   => 'root',
+#      content => inline_template('<%= scope.to_hash.reject { |k,v| k.to_s =~ /(uptime.*|path|timestamp|free|.*password.*|.*psk.*|.*key)/ }.to_yaml %>'),
+#    }
+#  }
 }

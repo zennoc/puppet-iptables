@@ -156,17 +156,6 @@ define iptables::rule (
     $discard_4 = inline_template('<% @implicit_matches["destination-port"] = @port %>')
   }
 
-  if $debug {
-    iptables::debug{ "debug params $name":
-      true_port            => $true_port,
-      true_protocol        => $true_protocol,
-      array_source_v6      => $array_source_v6,
-      array_destination_v6 => $array_destination_v6,
-      array_source         => $array_source,
-      array_destination    => $array_destination,
-    }
-  }
-
   if $log {
 
     $log_explicit_matches = {}
@@ -202,7 +191,7 @@ define iptables::rule (
   }
 
 
-  if $bool_enable_v4 and $iptables::bool_enable_v4 {
+  if $bool_enable_v4 and $iptables::enable_v4 {
 
     if $target == $iptables::reject_string_v6 {
       $target_v4 = $iptables::reject_string_v4
@@ -217,7 +206,7 @@ define iptables::rule (
     )
   }
 
-  if $bool_enable_v6 and $iptables::bool_enable_v6 {
+  if $bool_enable_v6 and $iptables::enable_v6 {
 
     if $target == $iptables::reject_string_v4 {
       $target_v6 = $iptables::reject_string_v6
@@ -232,8 +221,8 @@ define iptables::rule (
     )
   }
 
-  if ! ($bool_enable_v4 and $iptables::bool_enable_v4) and
-     ! ($bool_enable_v6 and $iptables::bool_enable_v6
+  if ! ($bool_enable_v4 and $iptables::enable_v4) and
+     ! ($bool_enable_v6 and $iptables::enable_v6
   ) {
     warning("Rule ${name} was discarded as no IP version matched")
   }

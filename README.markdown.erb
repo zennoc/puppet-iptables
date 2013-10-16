@@ -1,20 +1,20 @@
-#<%= metadata.name %>
+#iptables
 
 ####Table of Contents
 
 1. [Overview](#overview)
 2. [Module Description](#module-description)
 3. [Setup](#setup)
-    * [Resources managed by <%= metadata.name %> module](#resources-managed-by-<%= metadata.name %>-module)
+    * [Resources managed by iptables module](#resources-managed-by-iptables-module)
     * [Setup requirements](#setup-requirements)
-    * [Beginning with module <%= metadata.name %>](#beginning-with-module-<%= metadata.name %>)
+    * [Beginning with module iptables](#beginning-with-module-iptables)
 4. [Usage](#usage)
 5. [Operating Systems Support](#operating-systems-support)
 6. [Development](#development)
 
 ##Overview
 
-This module installs, manages and configures <%= metadata.name %>.
+This module installs, manages and configures iptables.
 
 ##Module Description
 
@@ -25,9 +25,9 @@ Refer to http://github.com/stdmod/ for complete documentation on the common para
 
 ##Setup
 
-###Resources managed by <%= metadata.name %> module
-* This module installs the <%= metadata.name %> package
-* Enabled the <%= metadata.name %> service
+###Resources managed by iptables module
+* This module installs the iptables package
+* Enabled the iptables service
 * Can manage all the configuration files (by default no file is changed)
 
 ###Setup Requirements
@@ -35,21 +35,21 @@ Refer to http://github.com/stdmod/ for complete documentation on the common para
 * Puppet version >= 2.7.x
 * Facter version >= 1.6.2
 
-###Beginning with module <%= metadata.name %>
+###Beginning with module iptables
 
 To install the package provided by the module just include it:
 
-        include <%= metadata.name %>
+        include iptables
 
 The main class arguments can be provided either via Hiera (from Puppet 3.x) or direct parameters:
 
-        class { '<%= metadata.name %>':
+        class { 'iptables':
           parameter => value,
         }
 
-The module provides also a generic define to manage any <%= metadata.name %> configuration file:
+The module provides also a generic define to manage any iptables configuration file:
 
-        <%= metadata.name %>::conf { 'sample.conf':
+        iptables::conf { 'sample.conf':
           content => '# Test',
         }
 
@@ -58,14 +58,14 @@ The module provides also a generic define to manage any <%= metadata.name %> con
 
 * A common way to use this module involves the management of the main configuration file via a custom template (provided in a custom site module):
 
-        class { '<%= metadata.name %>':
-          config_file_template => 'site/<%= metadata.name %>/<%= metadata.name %>.conf.erb',
+        class { 'iptables':
+          config_file_template => 'site/iptables/iptables.conf.erb',
         }
 
 * You can write custom templates that use setting provided but the config_file_options_hash paramenter
 
-        class { '<%= metadata.name %>':
-          config_file_template      => 'site/<%= metadata.name %>/<%= metadata.name %>.conf.erb',
+        class { 'iptables':
+          config_file_template      => 'site/iptables/iptables.conf.erb',
           config_file_options_hash  => {
             opt  => 'value',
             opt2 => 'value2',
@@ -74,30 +74,30 @@ The module provides also a generic define to manage any <%= metadata.name %> con
 
 * Use custom source (here an array) for main configuration file. Note that template and source arguments are alternative.
 
-        class { '<%= metadata.name %>':
-          config_file_source => [ "puppet:///modules/site/<%= metadata.name %>/<%= metadata.name %>.conf-${hostname}" ,
-                                  "puppet:///modules/site/<%= metadata.name %>/<%= metadata.name %>.conf" ],
+        class { 'iptables':
+          config_file_source => [ "puppet:///modules/site/iptables/iptables.conf-${hostname}" ,
+                                  "puppet:///modules/site/iptables/iptables.conf" ],
         }
 
 
 * Use custom source directory for the whole configuration directory, where present.
 
-        class { '<%= metadata.name %>':
-          config_dir_source  => 'puppet:///modules/site/<%= metadata.name %>/conf/',
+        class { 'iptables':
+          config_dir_source  => 'puppet:///modules/site/iptables/conf/',
         }
 
 * Use custom source directory for the whole configuration directory and purge all the local files that are not on the dir.
   Note: This option can be used to be sure that the content of a directory is exactly the same you expect, but it is desctructive and may remove files.
 
-        class { '<%= metadata.name %>':
-          config_dir_source => 'puppet:///modules/site/<%= metadata.name %>/conf/',
+        class { 'iptables':
+          config_dir_source => 'puppet:///modules/site/iptables/conf/',
           config_dir_purge  => true, # Default: false.
         }
 
 * Use custom source directory for the whole configuration dir and define recursing policy.
 
-        class { '<%= metadata.name %>':
-          config_dir_source    => 'puppet:///modules/site/<%= metadata.name %>/conf/',
+        class { 'iptables':
+          config_dir_source    => 'puppet:///modules/site/iptables/conf/',
           config_dir_recursion => false, # Default: true.
         }
 
