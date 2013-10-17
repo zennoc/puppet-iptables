@@ -1,3 +1,5 @@
-YYYY-MM-DD Release 0.0.1
-- something you did
-- something else you did
+2013-10-10 Release 3.0.0-beta
+- Introduce version 3 of this module. 
+- Introduce support for managing tables and chains
+- Backwards Compatibility breaks are present
+- Adhere to proposed StdMod structure
