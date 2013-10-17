@@ -55,7 +55,7 @@ define iptables::conf (
   # Input parameters validation
 
   validate_re($ensure, ['present','absent'], 'Valid values are: present, absent. WARNING: If set to absent the conf file is removed.')
-  validate_int($ip_version)
+#  validate_int($ip_version)
 
   include iptables
   include concat::setup
@@ -132,7 +132,7 @@ define iptables::conf (
     chains         => [ 'INPUT', 'FORWARD', 'OUTPUT' ]
   }
 
-  if ! $ip_version == 4 or $iptables::configure_ipv6_nat {
+  if $ip_version == 4 or $iptables::configure_ipv6_nat {
     # Linux did not use to support NAT on IPv6. You'll have to declare thse
     # items yourself explicitly if your kernel and Netfilter does support this.
     # Feel free to write (and contribute back!) a mechanism that actually
@@ -147,7 +147,9 @@ define iptables::conf (
       ip_version     => $ip_version,
       chains         => [ 'PREROUTING', 'OUTPUT', 'POSTROUTING' ]
     }
+    
   }
+  
 
   iptables::table { "v${ip_version}_mangle":
     emitter_target => $manage_path,

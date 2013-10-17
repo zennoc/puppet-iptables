@@ -69,8 +69,8 @@ class iptables::params  {
 
   # use "$service restart" to load new firewall rules?
   $service_override_restart = $::operatingsystem ? {
-    /(?i:Ubuntu)/ => 'false', # Don't know about other distro's. Who does?
-    default       => 'true',
+    /(?i:Ubuntu)/ => false, # Don't know about other distro's. Who does?
+    default       => true,
   }
   
   $service_status_cmd = $::operatingsystem ? {

@@ -213,12 +213,12 @@ class iptables (
   if $config_file_options_hash { validate_hash($config_file_options_hash) }
 #  if $monitor_options_hash { validate_hash($monitor_options_hash) }
   validate_re($log, ['dropped','all','none',false], 'Valid values: dropped, all or none.')
-  validate_int($log_limit_burst)
+#  validate_int($log_limit_burst)
   validate_string($log_limit)
-  validate_int($log_level)
+#  validate_int($log_level)
   validate_bool($rejectWithICMPProhibited)
   validate_string($default_target)
-  validate_int($default_order)
+#  validate_int($default_order)
   validate_bool($enable_v4)
   validate_bool($enable_v6)
   validate_bool($failsafe_ssh)
@@ -300,20 +300,21 @@ class iptables (
   # Resources manage
 
   if $iptables::package_name {
-    package { $iptables::package_name:
+    package { 'iptables':
+      name     => $iptables::package_name,
       ensure   => $iptables::manage_package_ensure,
     }
   }
 
   if $iptables::service_name {
-    service { $iptables::service_name:
-      ensure     => $iptables::manage_service_ensure,
-      enable     => $iptables::manage_service_enable,
-    }
-    
+#    service { $iptables::service_name:
+#      ensure     => $iptables::manage_service_ensure,
+#      enable     => $iptables::manage_service_enable,
+#    }
     
     if ! $service_override_restart {
-      service { $iptables::service_name:
+      service { 'iptables':
+        name       => $iptables::service_name,
         ensure     => $iptables::manage_service_ensure,
         enable     => $iptables::manage_service_enable,
 #        hasstatus  => $iptables::service_status,
