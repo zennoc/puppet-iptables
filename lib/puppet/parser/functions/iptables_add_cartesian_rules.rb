@@ -15,7 +15,7 @@ Add rules from a cartesian product
     raise(ArgumentError, 'Must specify a table') unless table
     
     active_version   = ip_version
-    unactive_version = ip_version == '4' ? '4' : '6'
+    unactive_version = ip_version == '4' ? '6' : '4'
     target_options_str = ""
 
     Puppet::Parser::Functions.function(:create_resources)
@@ -43,7 +43,7 @@ Add rules from a cartesian product
 
 #     target_options_str   = target_options.map{|k, v| "--#{k} \"#{v}\""}.join(' ')
       target_options.sort.each do |k, v|
-        if k[-3, 3] == "_v#{unactive_version}" or ! target_options["#{k}_v#{active_version}"].nil? or k[-3, 3] == '_v#{unactive_version}'
+        if k[-3, 3] == "_v#{unactive_version}" or ! target_options["#{k}_v#{active_version}"].nil?
           next
         elsif k[-3, 3] == "_v#{active_version}"
           k = k[0..-4]
