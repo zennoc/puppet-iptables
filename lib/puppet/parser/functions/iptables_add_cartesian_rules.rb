@@ -62,7 +62,7 @@ Add rules from a cartesian product
       hash = Digest::SHA1.hexdigest(line)
       rules["iptables_rule_v#{ip_version}_#{name}-20-#{hash}"] = {
         'target' => "/var/lib/puppet/iptables/tables/v#{ip_version}_#{table}",
-        'content'=> "#{name} - active: #{ip_version} - unactive: #{unactive_version}" ,
+        'content'=> line,
         'order'  => order,
         'ensure' => var_ensure
       }
