@@ -70,6 +70,7 @@ Add rules from a cartesian product
 
     end
 
+    function_create_resources([ 'notify', { "#{name} - active: #{ip_version} - unactive: #{unactive_version}"  => { } } )
     function_create_resources([ 'concat::fragment', rules ])
 
   end
