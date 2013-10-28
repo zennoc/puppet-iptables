@@ -13,6 +13,10 @@ Add rules from a cartesian product
     raise(ArgumentError, 'Must specify a order') unless order
     raise(ArgumentError, 'Must specify a ensure') unless var_ensure
     raise(ArgumentError, 'Must specify a table') unless table
+    
+    active_version   = ip_version
+    unactive_version = ip_version == '4' ? '4' : '6'
+    target_options_str = ""
 
     Puppet::Parser::Functions.function(:create_resources)
     rules = {}
@@ -37,7 +41,16 @@ Add rules from a cartesian product
         explicit_matches, ip_version == "6"
       ])
 
-      target_options_str   = target_options.map{|k, v| "--#{k} \"#{v}\""}.join(' ')
+#     target_options_str   = target_options.map{|k, v| "--#{k} \"#{v}\""}.join(' ')
+      target_options.sort.each do |k, v|
+        if k[-3, 3] == "_v#{unactive_version}" or ! target_options["#{k}_v#{active_version}"].nil? or k[-3, 3] == '_v#{unactive_version}'
+          next
+        elsif k[-3, 3] == "_v#{active_version}"
+          k = k[0..-4]
+        end
+
+        target_options_str << "--#{k} \"#{v}\" "
+      end
 
       if rule != ''
         line = "#{command} #{chain} #{rule} -j #{target}\n"
