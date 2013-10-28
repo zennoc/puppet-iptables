@@ -41,7 +41,6 @@ Add rules from a cartesian product
         explicit_matches, ip_version == "6"
       ])
 
-#     target_options_str   = target_options.map{|k, v| "--#{k} \"#{v}\""}.join(' ')
       target_options.sort.each do |k, v|
         if k[-3, 3] == "_v#{unactive_version}" or ! target_options["#{k}_v#{active_version}"].nil?
           next
@@ -63,14 +62,13 @@ Add rules from a cartesian product
       hash = Digest::SHA1.hexdigest(line)
       rules["iptables_rule_v#{ip_version}_#{name}-20-#{hash}"] = {
         'target' => "/var/lib/puppet/iptables/tables/v#{ip_version}_#{table}",
-        'content'=> line,
+        'content'=> "#{name} - active: #{ip_version} - unactive: #{unactive_version}" ,
         'order'  => order,
         'ensure' => var_ensure
       }
 
     end
 
-    function_create_resources([ 'notify', { "#{name} - active: #{ip_version} - unactive: #{unactive_version}"  => { } } )
     function_create_resources([ 'concat::fragment', rules ])
 
   end
