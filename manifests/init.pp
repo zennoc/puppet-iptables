@@ -324,15 +324,27 @@ class iptables (
       }
     } else {
   
+  $service_status = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/ => false,
+    default                   => true,
+  }
+
+  $service_status_cmd = $::operatingsystem ? {
+    /(?i:Debian|Ubuntu|Mint)/ => '/bin/true',
+    default                   => undef,
+  }
+
       service { 'iptables':
-        ensure     => $iptables::manage_service_ensure,
         name       => $service_name,
+        
+        ensure     => $iptables::manage_service_ensure,
         enable     => $iptables::manage_service_enable,
-#        hasstatus  => $iptables::service_status,
-#        status     => $iptables::service_status_cmd,
+        hasstatus  => $iptables::service_status,
+        status     => $iptables::service_status_cmd,
 #        require    => Package['iptables'],
         hasrestart => false,
         restart    => $cmd_restart
+
       }
     }
   }
