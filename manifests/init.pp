@@ -311,13 +311,14 @@ class iptables (
 #      ensure     => $iptables::manage_service_ensure,
 #      enable     => $iptables::manage_service_enable,
 #    }
-    
-    if ! $service_override_restart {
+
+    if ! $service_name_override_restart {
       service { 'iptables':
         name       => $iptables::service_name,
         ensure     => $iptables::manage_service_ensure,
         enable     => $iptables::manage_service_enable,
-#        hasstatus  => $iptables::service_status,
+        hasstatus  => false,
+        hasrestart => false,
 #        status     => $iptables::service_status_cmd,
 #        require    => Package['iptables']
       }
