@@ -289,13 +289,15 @@ class iptables (
   $cmd_restart_v6 = inline_template('ip6tables-restore < <%= scope.lookupvar("iptables::config_file_path_v6") %>')
 
   if $enable_v4 and $enable_v6 {
-    $cmd_restart = "${cmd_restart_v4} && ${cmd_restart_v6}"
+    $cmd_restart  = "${cmd_restart_v4} && ${cmd_restart_v6}"
+    $ifup_content = "#!/bin/sh\n${cmd_restart_v4}\n${cmd_restart_v6}\n"
   } elsif $enable_v4 {
     $cmd_restart = $cmd_restart_v4
+    $ifup_content = "#!/bin/sh\n${cmd_restart_v4}\n"
   } else {
     $cmd_restart = $cmd_restart_v6
+    $ifup_content = "#!/bin/sh\n${cmd_restart_v6}\n"
   }
-
 
   # Resources manage
 
@@ -307,45 +309,35 @@ class iptables (
   }
 
   if $iptables::service_name {
-#    service { $iptables::service_name:
-#      ensure     => $iptables::manage_service_ensure,
-#      enable     => $iptables::manage_service_enable,
-#    }
 
-    if ! $service_name_override_restart {
-      service { 'iptables':
-        name       => $iptables::service_name,
-        ensure     => $iptables::manage_service_ensure,
-        enable     => $iptables::manage_service_enable,
-        hasstatus  => false,
-        hasrestart => false,
-#        status     => $iptables::service_status_cmd,
-#        require    => Package['iptables']
-      }
-    } else {
-  
-  $service_status = $::operatingsystem ? {
-    /(?i:Debian|Ubuntu|Mint)/ => false,
-    default                   => true,
+    $service_status = $::operatingsystem ? {
+      /(?i:Debian|Ubuntu|Mint)/ => false,
+      default                   => true,
+    }
+
+    $service_status_cmd = $::operatingsystem ? {if-
+      /(?i:Debian|Ubuntu|Mint)/ => '/bin/true',
+      default                   => undef,
+    }
+
+    service { 'iptables':
+      name       => $service_name,
+      ensure     => $iptables::manage_service_ensure,
+      enable     => $iptables::manage_service_enable,
+      hasstatus  => $iptables::service_status,
+      status     => $iptables::service_status_cmd,
+      hasrestart => false,
+      restart    => $cmd_restart
+    }
   }
 
-  $service_status_cmd = $::operatingsystem ? {
-    /(?i:Debian|Ubuntu|Mint)/ => '/bin/true',
-    default                   => undef,
-  }
-
-      service { 'iptables':
-        name       => $service_name,
-        
-        ensure     => $iptables::manage_service_ensure,
-        enable     => $iptables::manage_service_enable,
-        hasstatus  => $iptables::service_status,
-        status     => $iptables::service_status_cmd,
-#        require    => Package['iptables'],
-        hasrestart => false,
-        restart    => $cmd_restart
-
-      }
+  if $::operatingsystem =~ /(?i:Debian|Ubuntu|Mint)/ {
+    file { '/etc/network/if-up.d/iptables':
+      ensure  => present,
+      owner   => root,
+      group   => root,
+      mode    => 0755,
+      content => $ifup_content
     }
   }
 
@@ -433,11 +425,10 @@ class iptables (
     recurse => true
   }
 
-
-  # Extra classe
-
   include iptables::ruleset::default_action
   include iptables::ruleset::loopback
+  include iptables::ruleset::invalid
+  include iptables::ruleset::related_established
 
   if $failsafe_ssh {
     include iptables::ruleset::failsafe_ssh
