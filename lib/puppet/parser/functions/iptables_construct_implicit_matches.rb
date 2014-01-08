@@ -33,16 +33,16 @@ Construct the Implicit Matches hash map for the Iptables module
       prepend_items = [ 'protocol', 'p' ]
       if prepend_items.include?(k)
         if k.length == 1
-          implicit_matches_str = "-#{k} #{invert} #{v} " + implicit_matches_str
+          implicit_matches_str = " #{invert}-#{k} #{v} " + implicit_matches_str
         else
-          implicit_matches_str = "--#{k} #{invert} #{v} " + implicit_matches_str
+          implicit_matches_str = "#{invert} --#{k} #{v} " + implicit_matches_str
         end       
       else
     
         if k.length == 1
-          implicit_matches_str << "-#{k} #{invert} #{v} "
+          implicit_matches_str << "#{invert} -#{k} #{v} "
         else
-          implicit_matches_str << "--#{k} #{invert} #{v} "
+          implicit_matches_str << "#{invert} --#{k} #{v} "
         end
       end
     end
