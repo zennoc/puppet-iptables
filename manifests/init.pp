@@ -315,7 +315,7 @@ class iptables (
       default                   => true,
     }
 
-    $service_status_cmd = $::operatingsystem ? {if-
+    $service_status_cmd = $::operatingsystem ? {
       /(?i:Debian|Ubuntu|Mint)/ => '/bin/true',
       default                   => undef,
     }
