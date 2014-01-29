@@ -185,7 +185,7 @@ class iptables (
 
 # Module specific variables
   $log                            = 'dropped',
-  $log_prefix                     = 'iptables',
+  $log_prefix                     = 'iptables ',
   $log_limit_burst                = 10,
   $log_limit                      = '30/m',
   $log_level                      = 4,
